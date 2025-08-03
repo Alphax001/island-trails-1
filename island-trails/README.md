@@ -1,2 +1,0 @@
-# island-trails
-
