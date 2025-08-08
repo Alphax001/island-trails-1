@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking API Debug</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        button { padding: 10px 20px; margin: 5px; }
+        .output { background: #f5f5f5; padding: 10px; margin: 10px 0; white-space: pre-wrap; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Booking API Debug Tool</h1>
+    
+    <div class="section">
+        <h3>1. Test Authentication</h3>
+        <button onclick="testAuth()">Test Current Authentication</button>
+        <div id="authResult" class="output"></div>
+    </div>
+    
+    <div class="section">
+        <h3>2. Login as Different Users</h3>
+        <button onclick="loginAs('test@example.com', 'password123')">Login as Test User</button>
+        <button onclick="loginAs('ashen@gmail.com', 'password123')">Login as Ashen</button>
+        <button onclick="loginAs('admin@example.com', 'admin123')">Login as Admin</button>
+        <div id="loginResult" class="output"></div>
+    </div>
+    
+    <div class="section">
+        <h3>3. Test Booking API</h3>
+        <button onclick="testBookingAPI()">Get My Bookings</button>
+        <button onclick="testBookingAPIWithDetails()">Get Bookings with Details</button>
+        <div id="bookingResult" class="output"></div>
+    </div>
+    
+    <div class="section">
+        <h3>4. Test Specific User Bookings</h3>
+        <input type="number" id="userIdInput" placeholder="User ID" value="8">
+        <button onclick="testUserBookings()">Get User Bookings (Direct DB)</button>
+        <div id="userBookingResult" class="output"></div>
+    </div>
+
+    <script>
+        const API_BASE = './src/api';
+        
+        function log(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            const className = isError ? 'error' : 'success';
+            element.innerHTML += `<div class="${className}">${new Date().toLocaleTimeString()}: ${message}</div>`;
+        }
+        
+        async function testAuth() {
+            const authResult = document.getElementById('authResult');
+            authResult.innerHTML = '';
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                log('authResult', `Token in localStorage: ${token ? 'Found' : 'Not Found'}`);
+                
+                if (token) {
+                    // Decode token to see user info
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    log('authResult', `Token payload: ${JSON.stringify(payload, null, 2)}`);
+                }
+                
+                // Test auth endpoint
+                const response = await fetch(`${API_BASE}/auth/userApi.php?action=profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                log('authResult', `Auth test response: ${JSON.stringify(data, null, 2)}`);
+                
+            } catch (error) {
+                log('authResult', `Error: ${error.message}`, true);
+            }
+        }
+        
+        async function loginAs(email, password) {
+            const loginResult = document.getElementById('loginResult');
+            loginResult.innerHTML = '';
+            
+            try {
+                log('loginResult', `Attempting login as: ${email}`);
+                
+                const response = await fetch(`${API_BASE}/auth/userApi.php?action=login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                log('loginResult', `Login response: ${JSON.stringify(data, null, 2)}`);
+                
+                if (data.success && data.token) {
+                    localStorage.setItem('authToken', data.token);
+                    log('loginResult', `✅ Login successful! Token saved.`);
+                    
+                    // Show user info
+                    if (data.user) {
+                        log('loginResult', `User ID: ${data.user.id}, Name: ${data.user.name}, Email: ${data.user.email}`);
+                    }
+                } else {
+                    log('loginResult', `❌ Login failed: ${data.message}`, true);
+                }
+                
+            } catch (error) {
+                log('loginResult', `Error: ${error.message}`, true);
+            }
+        }
+        
+        async function testBookingAPI() {
+            const bookingResult = document.getElementById('bookingResult');
+            bookingResult.innerHTML = '';
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    log('bookingResult', '❌ No auth token found. Please login first.', true);
+                    return;
+                }
+                
+                log('bookingResult', 'Testing booking API...');
+                
+                const response = await fetch(`${API_BASE}/bookings/bookingApi.php?action=getUserBookings`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log('bookingResult', `Response status: ${response.status}`);
+                log('bookingResult', `Response headers: ${JSON.stringify([...response.headers.entries()])}`);
+                
+                const data = await response.json();
+                log('bookingResult', `API response: ${JSON.stringify(data, null, 2)}`);
+                
+            } catch (error) {
+                log('bookingResult', `Error: ${error.message}`, true);
+            }
+        }
+        
+        async function testBookingAPIWithDetails() {
+            const bookingResult = document.getElementById('bookingResult');
+            
+            try {
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    log('bookingResult', '❌ No auth token found. Please login first.', true);
+                    return;
+                }
+                
+                log('bookingResult', 'Testing booking API with package details...');
+                
+                const response = await fetch(`${API_BASE}/bookings/bookingApi.php?action=getUserBookingsWithDetails`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                log('bookingResult', `API with details response: ${JSON.stringify(data, null, 2)}`);
+                
+            } catch (error) {
+                log('bookingResult', `Error: ${error.message}`, true);
+            }
+        }
+        
+        async function testUserBookings() {
+            const userBookingResult = document.getElementById('userBookingResult');
+            userBookingResult.innerHTML = '';
+            
+            try {
+                const userId = document.getElementById('userIdInput').value;
+                log('userBookingResult', `Testing direct DB query for User ID: ${userId}`);
+                
+                const response = await fetch(`test-user-bookings.php?user_id=${userId}`);
+                const text = await response.text();
+                log('userBookingResult', text);
+                
+            } catch (error) {
+                log('userBookingResult', `Error: ${error.message}`, true);
+            }
+        }
+    </script>
+</body>
+</html>

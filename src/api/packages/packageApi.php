@@ -1,5 +1,6 @@
 <?php
 require_once 'src/utils/ApiResourceBase.php';
+require_once 'src/classes/Model.php';
 require_once 'src/classes/Packages.php';
 require_once 'src/database/connection.php';
 

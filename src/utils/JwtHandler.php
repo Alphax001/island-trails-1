@@ -17,12 +17,8 @@ class JwtHandler{
             "aud" => self::$audience,
             "iat" => self::$issueAt,
             "exp"=> self::$expire,
-            "data" =>[
-                "id" => $user['id'] ?? null,
-                "username" => $user['name'] ?? null,
-                "email" => $user['email'] ?? null,
-                "role" => $user['role'] ?? null,
-            ]
+            "uid" => $user['id'] ?? null,
+            "role" => $user['role'] ?? null,
         ];
         return JWT::encode($payLoad, self::$secretKey, 'HS256');
 
@@ -31,7 +27,7 @@ class JwtHandler{
             $decoded = JWT::decode($token, new Key(self::$secretKey, 'HS256'));
             return [
                 'valid' => true,
-                'data' => (array)$decoded->data,
+                'data' => (array)$decoded,
             ];
         }catch(Exception $ex){
             return[
@@ -47,8 +43,21 @@ class JwtHandler{
      * @return array Token data or error information
      */
     public static function getTokenFromHeader() {
-        $headers = getallheaders();
-        $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : '';
+        // Try multiple methods to get Authorization header
+        $authHeader = '';
+        
+        // Method 1: getallheaders() if available
+        if (function_exists('getallheaders')) {
+            $headers = getallheaders();
+            $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : 
+                         (isset($headers['authorization']) ? $headers['authorization'] : '');
+        }
+        
+        // Method 2: $_SERVER fallback
+        if (!$authHeader) {
+            $authHeader = isset($_SERVER['HTTP_AUTHORIZATION']) ? $_SERVER['HTTP_AUTHORIZATION'] : 
+                         (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) ? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] : '');
+        }
         
         if (preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
             $token = $matches[1];

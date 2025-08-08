@@ -125,6 +125,40 @@ class Booking extends Model {
     }
 
     /**
+     * Get all bookings for a specific user with full package details
+     * 
+     * @param int $user_id
+     * @return array Returns array of bookings with complete package information
+     */
+    public function getBookingsByUserWithDetails($user_id) {
+        $conn = DatabaseConnection::getConnection();
+        $sql = "SELECT 
+                    b.id as booking_id,
+                    b.user_id,
+                    b.package_id,
+                    b.booking_date,
+                    b.status,
+                    b.created_at,
+                    p.title as package_title,
+                    p.description as package_description,
+                    p.price as package_price,
+                    p.duration as package_duration,
+                    p.location as package_location,
+                    p.image_url as package_image,
+                    p.includes as package_includes,
+                    p.excludes as package_excludes
+                FROM bookings b 
+                LEFT JOIN packages p ON b.package_id = p.id 
+                WHERE b.user_id = :user_id 
+                ORDER BY b.created_at DESC";
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(':user_id', $user_id);
+        $stmt->execute();
+        
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
      * Get all bookings (admin function)
      * 
      * @return array Returns array of all bookings

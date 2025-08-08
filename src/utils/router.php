@@ -12,8 +12,7 @@ class Router
     public function __construct()
     {
         $this->parseURL();
-        // $this->authRole = $this->parseSession();
-        $this->authRole = 'admin';
+        $this->authRole = $this->parseAuth(); // Changed from hardcoded admin
         $this->method = $_SERVER['REQUEST_METHOD'];
         if ($this->method === 'GET') {
             $this->data = $_GET;
@@ -26,9 +25,24 @@ class Router
     {
         $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
         $url = explode('/', $path);
-        $this->group = isset($url[2]) ? $url[2] : null;
-        $this->resource = isset($url[3]) ? $url[3] : null;
-        $this->action = isset($url[4]) ? $url[4] : null;
+        
+        // Remove empty elements and reindex array
+        $url = array_values(array_filter($url));
+        
+        // For path like /WAD/island-trails/api/auth/user/signUp
+        // Find the 'api' position and parse from there
+        $apiIndex = array_search('api', $url);
+        
+        if ($apiIndex !== false) {
+            $this->group = isset($url[$apiIndex + 1]) ? $url[$apiIndex + 1] : null;     // 'auth'
+            $this->resource = isset($url[$apiIndex + 2]) ? $url[$apiIndex + 2] : null;  // 'user'
+            $this->action = isset($url[$apiIndex + 3]) ? $url[$apiIndex + 3] : null;    // 'signUp'
+        } else {
+            // Fallback to original parsing if 'api' not found
+            $this->group = isset($url[2]) ? $url[2] : null;
+            $this->resource = isset($url[3]) ? $url[3] : null;
+            $this->action = isset($url[4]) ? $url[4] : null;
+        }
     }
 
     private function parseSession()
@@ -38,6 +52,62 @@ class Router
         } else {
             return null;
         }
+    }
+
+    private function parseAuth()
+    {
+        // First check session
+        if (isset($_SESSION['role'])) {
+            return $_SESSION['role'];
+        }
+        
+        // Try multiple methods to get Authorization header
+        $authHeader = '';
+        
+        // Method 1: getallheaders() if available
+        if (function_exists('getallheaders')) {
+            $headers = getallheaders();
+            $authHeader = isset($headers['Authorization']) ? $headers['Authorization'] : 
+                         (isset($headers['authorization']) ? $headers['authorization'] : '');
+        }
+        
+        // Method 2: $_SERVER fallback
+        if (!$authHeader) {
+            $authHeader = isset($_SERVER['HTTP_AUTHORIZATION']) ? $_SERVER['HTTP_AUTHORIZATION'] : 
+                         (isset($_SERVER['REDIRECT_HTTP_AUTHORIZATION']) ? $_SERVER['REDIRECT_HTTP_AUTHORIZATION'] : '');
+        }
+        
+        if($authHeader && preg_match('/Bearer\s(\S+)/', $authHeader, $matches)){
+            $token = $matches[1];
+            
+            // Try to decode the token using simple parsing
+            try {
+                $parts = explode('.', $token);
+                if (count($parts) === 3) {
+                    $payload = base64_decode(str_replace('_', '/', str_replace('-', '+', $parts[1])));
+                    $data = json_decode($payload, true);
+                    
+                    if ($data && isset($data['role'])) {
+                        error_log("DEBUG: Simple JWT parsing successful, role: " . $data['role']);
+                        return $data['role'];
+                    }
+                }
+            } catch (Exception $e) {
+                error_log("JWT parsing error: " . $e->getMessage());
+            }
+            
+            // Fallback to JwtHandler if simple parsing fails
+            require_once 'src/utils/JwtHandler.php';
+            $tokenResult = JwtHandler::getTokenFromHeader();
+            
+            if ($tokenResult['valid'] && isset($tokenResult['data']['role'])) {
+                error_log("DEBUG: JwtHandler parsing successful, role: " . $tokenResult['data']['role']);
+                return $tokenResult['data']['role'];
+            }
+        }
+        
+        error_log("DEBUG: No valid auth found");
+        return null; // No valid auth found
     }
 
     public function runScript()

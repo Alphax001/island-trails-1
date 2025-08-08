@@ -1,6 +1,7 @@
 <?php
 require_once 'src/utils/ApiResourceBase.php';
 require_once 'src/utils/JwtHandler.php';
+require_once 'src/classes/Model.php';
 require_once 'src/classes/Booking.php';
 require_once 'src/classes/Packages.php';
 require_once 'src/database/connection.php';
@@ -175,6 +176,39 @@ class BookingApi extends ApiResourceBase {
             "status" => "success",
             "message" => "User bookings retrieved successfully",
             "data" => $bookings
+        ];
+    }
+
+    /**
+     * Get all bookings for the authenticated user with full package details
+     */
+    public function readUserBookingsWithDetails($data) {
+        $user = $this->getAuthenticatedUser();
+        
+        if (!$user) {
+            return ["status" => "error", "message" => "Invalid Auth token"];
+        }
+        
+        $userRole = $user['role'] ?? null;
+        $userId = $user['id'] ?? null;
+        
+        if (!$this->checkRoles($userRole, 'readUserBookings')) {
+            return ["status" => "error", "message" => "Unauthorized action"];
+        }
+        
+        $booking = new Booking();
+        $bookings = $booking->getBookingsByUserWithDetails($userId);
+        
+        return [
+            "status" => "success",
+            "message" => "User bookings with details retrieved successfully",
+            "data" => $bookings,
+            "user_info" => [
+                "id" => $userId,
+                "name" => $user['name'],
+                "email" => $user['email'],
+                "role" => $userRole
+            ]
         ];
     }
 
