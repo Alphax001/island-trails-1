@@ -4,15 +4,17 @@ class Packages extends Model {
     public $id;
     public $title;
     public $description;
+    public $location;
     public $price;
     public $duration;
     public $image_url;
     public $created_at;
 
-    public function __construct($id = null, $title = null, $description = null, $price = null, $duration = null, $image_url = null) {
+    public function __construct($id = null, $title = null, $description = null, $location = null, $price = null, $duration = null, $image_url = null) {
         $this->id = $id;
         $this->title = $title;
         $this->description = $description;
+        $this->location = $location;
         $this->price = $price;
         $this->duration = $duration;
         $this->image_url = $image_url;
@@ -20,11 +22,12 @@ class Packages extends Model {
 
     public function create() {
         $conn = DatabaseConnection::getConnection();
-        $sql = "INSERT INTO packages (title, description, price, duration, image_url) VALUES (:title, :description, :price, :duration, :image_url)";
+        $sql = "INSERT INTO packages (title, description, location, price, duration, image_url) VALUES (:title, :description, :location, :price, :duration, :image_url)";
         $stmt = $conn->prepare($sql);
         
         $stmt->bindParam(':title', $this->title);
         $stmt->bindParam(':description', $this->description);
+        $stmt->bindParam(':location', $this->location);
         $stmt->bindParam(':price', $this->price);
         $stmt->bindParam(':duration', $this->duration);
         $stmt->bindParam(':image_url', $this->image_url);
@@ -40,12 +43,13 @@ class Packages extends Model {
 
     public function update() {
         $conn = DatabaseConnection::getConnection();
-        $sql = "UPDATE packages SET title = :title, description = :description, price = :price, duration = :duration, image_url = :image_url WHERE id = :id";
+        $sql = "UPDATE packages SET title = :title, description = :description, location = :location, price = :price, duration = :duration, image_url = :image_url WHERE id = :id";
         $stmt = $conn->prepare($sql);
         
         $stmt->bindParam(':id', $this->id);
         $stmt->bindParam(':title', $this->title);
         $stmt->bindParam(':description', $this->description);
+        $stmt->bindParam(':location', $this->location);
         $stmt->bindParam(':price', $this->price);
         $stmt->bindParam(':duration', $this->duration);
         $stmt->bindParam(':image_url', $this->image_url);
@@ -76,6 +80,7 @@ class Packages extends Model {
             if ($result) {
                 $this->title = $result['title'];
                 $this->description = $result['description'];
+                $this->location = $result['location'];
                 $this->price = $result['price'];
                 $this->duration = $result['duration'];
                 $this->image_url = $result['image_url'];

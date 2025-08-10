@@ -96,7 +96,7 @@ class UserApi extends ApiResourceBase{
         $conn = DatabaseConnection::getConnection();
         $sql = "SELECT id, name, email, role FROM users WHERE id = :user_id";
         $stmt = $conn->prepare($sql);
-        $stmt->bindValue(':user_id', $authenticatedUser['uid']);
+        $stmt->bindValue(':user_id', $authenticatedUser['id']);
         $stmt->execute();
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         

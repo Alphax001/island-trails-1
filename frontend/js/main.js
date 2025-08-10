@@ -23,19 +23,32 @@ const toastContainer = document.getElementById('toast-container');
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
     initializeApp();
-    setupEventListeners();
-    checkAuthToken();
 });
 
 // Initialize application
-function initializeApp() {
-    // Set initial section based on hash or default to home
+async function initializeApp() {
+    // Setup event listeners first
+    setupEventListeners();
+    
+    // Check authentication first
+    await checkAndVerifyAuth();
+    
+    // Then set initial section based on hash or default to home
     const hash = window.location.hash.substring(1);
     const section = hash || 'home';
     showSection(section);
     
     // Update active nav link
     updateActiveNavLink(section);
+}
+
+// Check and verify authentication
+async function checkAndVerifyAuth() {
+    const token = localStorage.getItem('authToken');
+    if (token) {
+        // Verify token and get user info
+        await verifyToken(token);
+    }
 }
 
 // Setup event listeners
@@ -74,6 +87,10 @@ function setupEventListeners() {
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('resize', handleResize);
     
+    // Contact form
+    const contactForm = document.getElementById('contact-form');
+    contactForm?.addEventListener('submit', handleContactForm);
+    
     // Close mobile menu when clicking outside
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.nav-container')) {
@@ -82,21 +99,10 @@ function setupEventListeners() {
     });
 }
 
-// Check for existing auth token
-function checkAuthToken() {
-    const token = localStorage.getItem('authToken');
-    if (token) {
-        // Verify token and get user info
-        verifyToken(token);
-    }
-}
-
 // Verify auth token
 async function verifyToken(token) {
     try {
-        // For now, we'll assume the token is valid if it exists
-        // You can uncomment the API call below when the profile endpoint is working
-        /*
+        // Try to get user profile from API first
         const response = await fetch(`${API_BASE_URL}/auth/user/profile`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -109,16 +115,11 @@ async function verifyToken(token) {
         if (data.status === 'success' && data.user) {
             currentUser = data.user;
             updateAuthUI(true);
-        } else {
-            // Token is invalid, remove it
-            localStorage.removeItem('authToken');
-            updateAuthUI(false);
+            return true;
         }
-        */
         
-        // Temporary solution: assume token is valid and create a basic user object
+        // Fallback: decode token manually if profile API fails
         if (token && token.length > 0) {
-            // Decode the JWT payload to get user info (basic decoding, not cryptographically verified)
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 currentUser = {
@@ -128,18 +129,42 @@ async function verifyToken(token) {
                     email: 'user@example.com' // Default email
                 };
                 updateAuthUI(true);
+                return true;
             } catch(e) {
                 localStorage.removeItem('authToken');
                 updateAuthUI(false);
+                return false;
             }
         } else {
             localStorage.removeItem('authToken');
             updateAuthUI(false);
+            return false;
         }
     } catch (error) {
         console.error('Token verification failed:', error);
-        localStorage.removeItem('authToken');
-        updateAuthUI(false);
+        
+        // Fallback: try to decode token manually
+        if (token && token.length > 0) {
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                currentUser = {
+                    id: payload.uid,
+                    role: payload.role || 'customer',
+                    name: 'User',
+                    email: 'user@example.com'
+                };
+                updateAuthUI(true);
+                return true;
+            } catch(e) {
+                localStorage.removeItem('authToken');
+                updateAuthUI(false);
+                return false;
+            }
+        } else {
+            localStorage.removeItem('authToken');
+            updateAuthUI(false);
+            return false;
+        }
     }
 }
 
@@ -220,27 +245,72 @@ function loadSectionContent(sectionId) {
             }
             break;
         case 'bookings':
+            // Check authentication for bookings page
             const token = localStorage.getItem('authToken');
+            
+            if (!token) {
+                showToast('Please log in to view your bookings', 'warning');
+                showSection('login');
+                return;
+            }
+            
             if (currentUser && typeof loadBookings === 'function') {
+                // User is authenticated and loaded, load bookings immediately
                 loadBookings();
-            } else if (token && typeof loadBookings === 'function') {
-                // User has a token but currentUser might not be loaded yet
-                // Wait a bit for token verification to complete
-                setTimeout(() => {
-                    if (currentUser) {
+            } else if (token) {
+                // User has token but currentUser not loaded yet
+                // Force token verification and then load bookings
+                verifyToken(token).then((result) => {
+                    if (currentUser && typeof loadBookings === 'function') {
                         loadBookings();
                     } else {
-                        // Token verification failed, redirect to login
                         showToast('Please log in to view your bookings', 'warning');
                         showSection('login');
                     }
-                }, 500);
-            } else if (!token) {
+                }).catch(() => {
+                    showToast('Please log in to view your bookings', 'warning');
+                    showSection('login');
+                });
+            } else {
                 showToast('Please log in to view your bookings', 'warning');
                 showSection('login');
             }
             break;
     }
+}
+
+// Handle contact form submission
+function handleContactForm(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = new FormData(form);
+    
+    const contactData = {
+        name: document.getElementById('contact-name').value,
+        email: document.getElementById('contact-email').value,
+        message: document.getElementById('contact-message').value
+    };
+    
+    // Basic validation
+    if (!contactData.name || !contactData.email || !contactData.message) {
+        showToast('Please fill in all fields', 'error');
+        return;
+    }
+    
+    if (!isValidEmail(contactData.email)) {
+        showToast('Please enter a valid email address', 'error');
+        return;
+    }
+    
+    showLoading();
+    
+    // Simulate sending message (since we don't have a backend endpoint for this)
+    setTimeout(() => {
+        hideLoading();
+        showToast('Thank you for your message! We\'ll get back to you soon.', 'success');
+        form.reset();
+    }, 1500);
 }
 
 // Handle hash change

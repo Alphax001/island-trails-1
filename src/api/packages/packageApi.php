@@ -53,6 +53,7 @@ class PackageApi extends ApiResourceBase {
         $package = new Packages();
         $package->title = $data['title'];
         $package->description = isset($data['description']) ? $data['description'] : null;
+        $package->location = isset($data['location']) ? $data['location'] : null;
         $package->price = $data['price'];
         $package->duration = isset($data['duration']) ? $data['duration'] : null;
         $package->image_url = isset($data['image_url']) ? $data['image_url'] : null;
@@ -97,6 +98,7 @@ class PackageApi extends ApiResourceBase {
         $package->id = $data['id'];
         $package->title = $data['title'];
         $package->description = isset($data['description']) ? $data['description'] : null;
+        $package->location = isset($data['location']) ? $data['location'] : null;
         $package->price = $data['price'];
         $package->duration = isset($data['duration']) ? $data['duration'] : null;
         $package->image_url = isset($data['image_url']) ? $data['image_url'] : null;

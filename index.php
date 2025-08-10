@@ -421,6 +421,7 @@ if ($isApiRequest) {
         <script src="frontend/js/auth.js"></script>
         <script src="frontend/js/packages.js"></script>
         <script src="frontend/js/bookings.js"></script>
+        <script src="frontend/js/imageHandler.js"></script>
     </body>
     </html>
     <?php

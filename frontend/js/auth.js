@@ -330,7 +330,7 @@ function quickLogin(userType = 'customer') {
     const demoCredentials = {
         customer: {
             email: 'test@example.com',
-            password: 'password123'
+            password: 'test123'
         },
         admin: {
             email: 'admin@example.com',

@@ -5,18 +5,19 @@ class DatabaseConnection {
     public static function getConnection(){
         if (self::$conn == null){
             try {
-                $host = "island-trails-sanjeevaliyanage980-435e.d.aivencloud.com";
-                $dbname = "defaultdb";
-                $port = "18321";
-                $username = "avnadmin";
-                $password = "AVNS_cnkBo1AqETaOaFbtLR-";
+                // Local XAMPP MySQL configuration
+                $host = "localhost";
+                $dbname = "island_trails";
+                $port = "3306";
+                $username = "root";
+                $password = ""; // Default XAMPP MySQL password is empty
 
-                $dsn = "mysql:host=$host;port=$port;dbname=$dbname;sslmode=require";
+                $dsn = "mysql:host=$host;port=$port;dbname=$dbname;charset=utf8mb4";
 
                 $options = [
-                    PDO::MYSQL_ATTR_SSL_CA => __DIR__ . '/ca.pem',
                     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+                    PDO::ATTR_EMULATE_PREPARES => false,
                 ];
 
                 self::$conn = new PDO($dsn, $username, $password, $options);

@@ -62,11 +62,12 @@ async function loadPackages() {
         packagesGrid.innerHTML = `
             <div class="error-message">
                 <i class="fas fa-exclamation-triangle"></i>
-                <p>Failed to load packages. Please try again later.</p>
-                <button class="btn btn-primary" onclick="loadPackages()">Retry</button>
+                <h3>Unable to Load Packages</h3>
+                <p>We're having trouble loading our travel packages. This could be due to a network issue or server maintenance.</p>
+                <button class="btn btn-primary" onclick="loadPackages()">Try Again</button>
             </div>
         `;
-        showToast('Failed to load packages', 'error');
+        showToast('Failed to load packages. Please check your internet connection.', 'error');
     }
 }
 
@@ -128,14 +129,33 @@ function renderPackages() {
     }
     
     packagesGrid.innerHTML = filteredPackages.map(pkg => createPackageCard(pkg)).join('');
+    
+    // Preload images for better performance
+    const imageUrls = filteredPackages
+        .map(pkg => pkg.image_url)
+        .filter(url => url);
+    
+    if (window.preloadImages) {
+        preloadImages(imageUrls);
+    }
 }
 
 // Create package card HTML
 function createPackageCard(pkg) {
     const imageUrl = pkg.image_url || null;
+    const fallbackImage = `
+        <div class="package-image-placeholder">
+            <i class="fas fa-mountain"></i>
+            <span>Package Image</span>
+        </div>
+    `;
+    
     const imageContent = imageUrl ? 
-        `<img src="${imageUrl}" alt="${pkg.title}" style="width: 100%; height: 100%; object-fit: cover;">` :
-        `<i class="fas fa-mountain"></i>`;
+        `<img src="${imageUrl}" alt="${pkg.title}" 
+             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" 
+             style="width: 100%; height: 100%; object-fit: cover;">
+         ${fallbackImage}` :
+        fallbackImage;
     
     return `
         <div class="package-card" data-package-id="${pkg.id}">
@@ -147,8 +167,8 @@ function createPackageCard(pkg) {
                 <p class="package-description">${truncateText(pkg.description, 120)}</p>
                 
                 <div class="package-details">
-                    <span><i class="fas fa-map-marker-alt"></i> ${pkg.location}</span>
-                    <span><i class="fas fa-clock"></i> ${pkg.duration}</span>
+                    <span><i class="fas fa-map-marker-alt"></i> ${pkg.location || 'Sri Lanka'}</span>
+                    <span><i class="fas fa-clock"></i> ${pkg.duration || 'Duration TBD'}</span>
                 </div>
                 
                 <div class="package-price">
@@ -200,7 +220,12 @@ function viewPackageDetails(packageId) {
         <div class="package-details-modal">
             <div class="package-hero">
                 ${pkg.image_url ? 
-                    `<img src="${pkg.image_url}" alt="${pkg.title}" style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">` :
+                    `<img src="${pkg.image_url}" alt="${pkg.title}" 
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" 
+                         style="width: 100%; height: 250px; object-fit: cover; border-radius: 8px;">
+                     <div class="package-hero-placeholder" style="display: none; background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); height: 250px; border-radius: 8px; align-items: center; justify-content: center; color: white; font-size: 3rem;">
+                         <i class="fas fa-mountain"></i>
+                     </div>` :
                     `<div style="background: linear-gradient(45deg, var(--primary-color), var(--accent-color)); height: 250px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: white; font-size: 3rem;"><i class="fas fa-mountain"></i></div>`
                 }
             </div>
@@ -208,12 +233,12 @@ function viewPackageDetails(packageId) {
             <div class="package-info" style="margin-top: 1.5rem;">
                 <h2>${pkg.title}</h2>
                 <p class="package-location" style="color: #666; margin-bottom: 1rem;">
-                    <i class="fas fa-map-marker-alt"></i> ${pkg.location}
+                    <i class="fas fa-map-marker-alt"></i> ${pkg.location || 'Sri Lanka'}
                 </p>
                 
                 <div class="package-meta" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
                     <div class="meta-item">
-                        <strong>Duration:</strong> ${pkg.duration}
+                        <strong>Duration:</strong> ${pkg.duration || 'Duration TBD'}
                     </div>
                     <div class="meta-item">
                         <strong>Price:</strong> ${formatCurrency(parseFloat(pkg.price))}
@@ -293,8 +318,8 @@ function showBookingModal(pkg) {
         <div class="booking-form-container">
             <div class="package-summary" style="background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
                 <h3>${pkg.title}</h3>
-                <p><i class="fas fa-map-marker-alt"></i> ${pkg.location}</p>
-                <p><i class="fas fa-clock"></i> ${pkg.duration}</p>
+                <p><i class="fas fa-map-marker-alt"></i> ${pkg.location || 'Sri Lanka'}</p>
+                <p><i class="fas fa-clock"></i> ${pkg.duration || 'Duration TBD'}</p>
                 <p class="price" style="font-size: 1.25rem; font-weight: 700; color: var(--primary-color);">
                     ${formatCurrency(parseFloat(pkg.price))}
                 </p>
