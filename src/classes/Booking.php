@@ -144,9 +144,7 @@ class Booking extends Model {
                     p.price as package_price,
                     p.duration as package_duration,
                     p.location as package_location,
-                    p.image_url as package_image,
-                    p.includes as package_includes,
-                    p.excludes as package_excludes
+                    p.image_url as package_image
                 FROM bookings b 
                 LEFT JOIN packages p ON b.package_id = p.id 
                 WHERE b.user_id = :user_id 

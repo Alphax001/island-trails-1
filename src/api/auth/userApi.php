@@ -1,9 +1,9 @@
 <?php
-require_once 'src/utils/ApiResourceBase.php';
-require_once 'src/utils/JwtHandler.php';
-require_once 'src/classes/Model.php';
-require_once 'src/classes/User.php';
-require_once 'src/database/connection.php';
+require_once __DIR__ . '/../../utils/ApiResourceBase.php';
+require_once __DIR__ . '/../../utils/JwtHandler.php';
+require_once __DIR__ . '/../../classes/Model.php';
+require_once __DIR__ . '/../../classes/User.php';
+require_once __DIR__ . '/../../database/connection.php';
 
 class UserApi extends ApiResourceBase{
    public function __construct(){
@@ -115,4 +115,55 @@ class UserApi extends ApiResourceBase{
    }
 
     
+}
+
+// Handle direct HTTP requests when file is accessed directly
+if (basename($_SERVER['PHP_SELF']) === 'userApi.php') {
+    header('Content-Type: application/json');
+    
+    try {
+        $userApi = new UserApi();
+        
+        // Get request data
+        $method = $_SERVER['REQUEST_METHOD'];
+        $data = [];
+        
+        if ($method === 'GET') {
+            $data = $_GET;
+        } else {
+            $input = file_get_contents('php://input');
+            $data = json_decode($input, true);
+            if ($data === null) {
+                $data = $_POST;
+            }
+        }
+        
+        // Determine action
+        $action = isset($data['action']) ? $data['action'] : '';
+        
+        switch ($action) {
+            case 'register':
+                $response = $userApi->signUp($data);
+                break;
+            case 'login':
+                $response = $userApi->login($data);
+                break;
+            case 'profile':
+                $response = $userApi->profile($data);
+                break;
+            default:
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Invalid action. Supported actions: register, login, profile'
+                ];
+        }
+        
+        echo json_encode($response);
+        
+    } catch (Exception $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Server error: ' . $e->getMessage()
+        ]);
+    }
 }

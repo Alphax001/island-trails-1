@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Login Test</title>
+</head>
+<body>
+    <script>
+        // Test admin login and check what happens
+        async function testAdminLogin() {
+            console.log('Testing admin login...');
+            
+            const response = await fetch('src/api/auth/userApi.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'login',
+                    email: 'admin@islandtrails.com',
+                    password: 'admin123'
+                })
+            });
+
+            const data = await response.json();
+            console.log('Login response:', data);
+            
+            if (data.status === 'success') {
+                console.log('User data:', data.user);
+                console.log('User role:', data.user.role);
+                
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+                
+                console.log('Stored user:', JSON.parse(localStorage.getItem('user')));
+                
+                // Now test navigation to admin page
+                window.location.href = 'index.php#admin-dashboard';
+            }
+        }
+        
+        testAdminLogin();
+    </script>
+</body>
+</html>

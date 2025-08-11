@@ -1,6 +1,5 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE");
 header("Access-Control-Allow-Headers: *");
 
 // Check if this is an API request
@@ -26,7 +25,7 @@ if ($isApiRequest) {
     <title>Island Trails - Discover Sri Lanka's Hidden Gems</title>
     
     <!-- CSS -->
-    <link rel="stylesheet" href="frontend-new/css/restructured.css?v=<?php echo time(); ?>">
+    <link rel="stylesheet" href="frontend-new/css/elegant.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -103,59 +102,8 @@ if ($isApiRequest) {
         </div>
     </nav>
 
-    <!-- Admin Sidebar -->
-    <aside class="admin-sidebar" id="admin-sidebar" style="display: block !important; position: fixed !important; top: 80px !important; left: 0 !important; width: 280px !important; height: calc(100vh - 80px) !important; background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%) !important; box-shadow: 2px 0 30px rgba(0, 0, 0, 0.15) !important; z-index: 1000 !important; overflow-y: auto !important; border-right: 1px solid rgba(255, 255, 255, 0.1) !important;">
-        <div class="sidebar-header" style="padding: 2rem 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.1); background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); position: relative; overflow: hidden;">
-            <div style="position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); pointer-events: none;"></div>
-            <h3 style="color: white; margin: 0; font-size: 1.4rem; font-weight: 700; position: relative; z-index: 2; display: flex; align-items: center;">
-                <i class="fas fa-crown" style="margin-right: 0.75rem; color: #fbbf24; font-size: 1.2rem;"></i>
-                Admin Control
-            </h3>
-            <p style="color: rgba(255,255,255,0.8); margin: 0.5rem 0 0 0; font-size: 0.875rem; position: relative; z-index: 2;">Island Trails Management</p>
-        </div>
-        <nav class="sidebar-nav" style="padding: 1.5rem 0;">
-            <a href="#" class="sidebar-link active" data-page="admin-dashboard" onclick="app.navigateTo('admin-dashboard')" style="display: flex; align-items: center; padding: 1rem 1.5rem; color: #e2e8f0; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid #2563eb; background: linear-gradient(135deg, rgba(37, 99, 235, 0.2) 0%, rgba(29, 78, 216, 0.1) 100%); margin: 0.25rem 1rem; border-radius: 12px; position: relative; overflow: hidden;">
-                <div style="position: absolute; inset: 0; background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, transparent 100%); pointer-events: none;"></div>
-                <div style="background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 1rem; position: relative; z-index: 2;">
-                    <i class="fas fa-chart-line" style="color: white; font-size: 1.1rem;"></i>
-                </div>
-                <div style="position: relative; z-index: 2;">
-                    <span style="font-weight: 600; color: white; font-size: 0.95rem;">Dashboard</span>
-                    <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 2px;">Overview & Stats</div>
-                </div>
-            </a>
-            <a href="#" class="sidebar-link" data-page="admin-packages" onclick="app.navigateTo('admin-packages')" style="display: flex; align-items: center; padding: 1rem 1.5rem; color: #94a3b8; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; margin: 0.25rem 1rem; border-radius: 12px; position: relative; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
-                    <i class="fas fa-box-open" style="color: white; font-size: 1.1rem;"></i>
-                </div>
-                <div>
-                    <span style="font-weight: 600; font-size: 0.95rem;">Manage Packages</span>
-                    <div style="font-size: 0.8rem; color: rgba(148,163,184,0.8); margin-top: 2px;">Add, Edit, Delete</div>
-                </div>
-            </a>
-            <a href="#" class="sidebar-link" data-page="admin-bookings" onclick="app.navigateTo('admin-bookings')" style="display: flex; align-items: center; padding: 1rem 1.5rem; color: #94a3b8; text-decoration: none; transition: all 0.3s ease; border-left: 3px solid transparent; margin: 0.25rem 1rem; border-radius: 12px; position: relative; overflow: hidden;">
-                <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 1rem;">
-                    <i class="fas fa-calendar-alt" style="color: white; font-size: 1.1rem;"></i>
-                </div>
-                <div>
-                    <span style="font-weight: 600; font-size: 0.95rem;">All Bookings</span>
-                    <div style="font-size: 0.8rem; color: rgba(148,163,184,0.8); margin-top: 2px;">Customer Orders</div>
-                </div>
-            </a>
-        </nav>
-        <div style="position: absolute; bottom: 1.5rem; left: 1.5rem; right: 1.5rem;">
-            <div style="background: linear-gradient(135deg, rgba(37, 99, 235, 0.1) 0%, rgba(29, 78, 216, 0.05) 100%); padding: 1rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1);">
-                <div style="display: flex; align-items: center; margin-bottom: 0.5rem;">
-                    <div style="width: 8px; height: 8px; background: #10b981; border-radius: 50%; margin-right: 0.5rem; animation: pulse 2s infinite;"></div>
-                    <span style="color: #e2e8f0; font-size: 0.8rem; font-weight: 500;">System Status</span>
-                </div>
-                <p style="color: rgba(226,232,240,0.7); margin: 0; font-size: 0.75rem;">All systems operational</p>
-            </div>
-        </div>
-    </aside>
-
     <!-- Main Content -->
-    <main class="main" style="margin-left: 280px; transition: margin-left 0.3s ease;">
+    <main class="main">
         <!-- Home Page -->
         <div id="home" class="page active">
             <!-- Hero Section -->
@@ -292,120 +240,6 @@ if ($isApiRequest) {
                                 <i class="fas fa-plus"></i>
                                 Book a Package
                             </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin Dashboard Page -->
-        <div id="admin-dashboard" class="page">
-            <div class="page-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-                <div class="container">
-                    <h1><i class="fas fa-tachometer-alt"></i> Admin Dashboard</h1>
-                    <p>Manage your Island Trails business with powerful insights</p>
-                </div>
-            </div>
-            <div class="container">
-                <div class="admin-stats" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 2rem; margin-bottom: 3rem;">
-                    <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 2rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3); display: flex; align-items: center; gap: 1.5rem; border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
-                        <i class="fas fa-users" style="font-size: 3rem; opacity: 0.9; background: rgba(255, 255, 255, 0.2); padding: 1rem; border-radius: 50%; backdrop-filter: blur(10px);"></i>
-                        <div class="stat-info">
-                            <h3 id="total-users" style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">0</h3>
-                            <p style="font-size: 1rem; opacity: 0.9; font-weight: 500;">Total Users</p>
-                        </div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; padding: 2rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(240, 147, 251, 0.3); display: flex; align-items: center; gap: 1.5rem; border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
-                        <i class="fas fa-calendar-check" style="font-size: 3rem; opacity: 0.9; background: rgba(255, 255, 255, 0.2); padding: 1rem; border-radius: 50%; backdrop-filter: blur(10px);"></i>
-                        <div class="stat-info">
-                            <h3 id="total-bookings" style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">0</h3>
-                            <p style="font-size: 1rem; opacity: 0.9; font-weight: 500;">Total Bookings</p>
-                        </div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; padding: 2rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(79, 172, 254, 0.3); display: flex; align-items: center; gap: 1.5rem; border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
-                        <i class="fas fa-map" style="font-size: 3rem; opacity: 0.9; background: rgba(255, 255, 255, 0.2); padding: 1rem; border-radius: 50%; backdrop-filter: blur(10px);"></i>
-                        <div class="stat-info">
-                            <h3 id="total-packages" style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">0</h3>
-                            <p style="font-size: 1rem; opacity: 0.9; font-weight: 500;">Total Packages</p>
-                        </div>
-                    </div>
-                    <div class="stat-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 2rem; border-radius: 20px; box-shadow: 0 20px 40px rgba(67, 233, 123, 0.3); display: flex; align-items: center; gap: 1.5rem; border: none; position: relative; overflow: hidden; transition: all 0.3s ease;">
-                        <i class="fas fa-dollar-sign" style="font-size: 3rem; opacity: 0.9; background: rgba(255, 255, 255, 0.2); padding: 1rem; border-radius: 50%; backdrop-filter: blur(10px);"></i>
-                        <div class="stat-info">
-                            <h3 id="total-revenue" style="font-size: 2.5rem; font-weight: 700; margin-bottom: 0.5rem; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">$0</h3>
-                            <p style="font-size: 1rem; opacity: 0.9; font-weight: 500;">Total Revenue</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="admin-quick-actions" style="background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%); padding: 2rem; border-radius: 24px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1); margin-bottom: 3rem; border: 1px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px);">
-                    <h2 style="margin-bottom: 1.5rem; color: var(--text-primary); font-size: 1.75rem; font-weight: 600; position: relative;">Quick Actions</h2>
-                    <div class="action-buttons" style="display: flex; gap: 1.5rem; flex-wrap: wrap;">
-                        <button class="btn-primary" onclick="app.navigateTo('admin-bookings')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 1rem 2rem; border-radius: 16px; font-weight: 600; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden; color: white;">
-                            <i class="fas fa-calendar-check"></i>
-                            View All Bookings
-                        </button>
-                        <button class="btn-primary" onclick="app.navigateTo('admin-packages')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 1rem 2rem; border-radius: 16px; font-weight: 600; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden; color: white;">
-                            <i class="fas fa-boxes"></i>
-                            Manage Packages
-                        </button>
-                        <button class="btn-primary" onclick="app.openModal('add-package-modal')" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none; padding: 1rem 2rem; border-radius: 16px; font-weight: 600; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3); transition: all 0.3s ease; position: relative; overflow: hidden; color: white;">
-                            <i class="fas fa-plus"></i>
-                            Add New Package
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin Bookings Page -->
-        <div id="admin-bookings" class="page">
-            <div class="page-header" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
-                <div class="container">
-                    <h1><i class="fas fa-calendar-check"></i> All Bookings</h1>
-                    <p>Manage customer bookings and track reservations</p>
-                </div>
-            </div>
-            <div class="container">
-                <div class="admin-bookings-section">
-                    <div class="bookings-filters">
-                        <button class="filter-btn active" data-status="all">All</button>
-                        <button class="filter-btn" data-status="pending">Pending</button>
-                        <button class="filter-btn" data-status="confirmed">Confirmed</button>
-                        <button class="filter-btn" data-status="cancelled">Cancelled</button>
-                    </div>
-                    <div class="admin-bookings-grid" id="admin-all-bookings">
-                        <!-- All bookings will be loaded here -->
-                        <div class="loading-placeholder">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <p>Loading bookings...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin Packages Page -->
-        <div id="admin-packages" class="page">
-            <div class="page-header" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">
-                <div class="container">
-                    <h1><i class="fas fa-boxes"></i> Manage Packages</h1>
-                    <p>Create, edit, and organize your travel packages</p>
-                </div>
-            </div>
-            <div class="container">
-                <div class="admin-packages-section">
-                    <div class="admin-actions">
-                        <button class="btn-primary" onclick="app.openModal('add-package-modal')">
-                            <i class="fas fa-plus"></i>
-                            Add New Package
-                        </button>
-                    </div>
-                    <div class="admin-packages-grid" id="admin-all-packages">
-                        <!-- All packages for admin management will be loaded here -->
-                        <div class="loading-placeholder">
-                            <i class="fas fa-spinner fa-spin"></i>
-                            <p>Loading packages...</p>
                         </div>
                     </div>
                 </div>
@@ -606,99 +440,12 @@ if ($isApiRequest) {
     <!-- Toast Container -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- Add Package Modal -->
-    <div id="add-package-modal" class="modal">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Add New Package</h3>
-                <button class="modal-close" onclick="closeModal('add-package-modal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="add-package-form" class="form">
-                    <div class="form-group">
-                        <label for="package-title">Package Title</label>
-                        <input type="text" id="package-title" name="title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="package-description">Description</label>
-                        <textarea id="package-description" name="description" rows="4" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="package-location">Location</label>
-                        <input type="text" id="package-location" name="location" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="package-price">Price ($)</label>
-                        <input type="number" id="package-price" name="price" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="package-duration">Duration</label>
-                        <input type="text" id="package-duration" name="duration" placeholder="e.g., 3 days, 1 week" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="package-image">Image URL</label>
-                        <input type="url" id="package-image" name="image_url" placeholder="https://example.com/image.jpg">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-outline" onclick="closeModal('add-package-modal')">Cancel</button>
-                        <button type="submit" class="btn-primary">Add Package</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Package Modal -->
-    <div id="edit-package-modal" class="modal">
-        <div class="modal-backdrop"></div>
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Edit Package</h3>
-                <button class="modal-close" onclick="closeModal('edit-package-modal')">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="edit-package-form" class="form">
-                    <input type="hidden" id="edit-package-id" name="id">
-                    <div class="form-group">
-                        <label for="edit-package-title">Package Title</label>
-                        <input type="text" id="edit-package-title" name="title" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-package-description">Description</label>
-                        <textarea id="edit-package-description" name="description" rows="4" required></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-package-location">Location</label>
-                        <input type="text" id="edit-package-location" name="location" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-package-price">Price ($)</label>
-                        <input type="number" id="edit-package-price" name="price" step="0.01" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-package-duration">Duration</label>
-                        <input type="text" id="edit-package-duration" name="duration" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-package-image">Image URL</label>
-                        <input type="url" id="edit-package-image" name="image_url">
-                    </div>
-                    <div class="form-actions">
-                        <button type="button" class="btn-outline" onclick="closeModal('edit-package-modal')">Cancel</button>
-                        <button type="submit" class="btn-primary">Update Package</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
     <!-- JavaScript -->
-    <script src="frontend-new/js/restructured.js"></script>
+    <script src="frontend-new/js/simple.js"></script>
+    <script src="frontend-new/js/app-simple.js"></script>
+    <script src="frontend-new/js/auth.js"></script>
+    <script src="frontend-new/js/packages.js"></script>
+    <script src="frontend-new/js/bookings.js"></script>
 </body>
 </html>
 <?php

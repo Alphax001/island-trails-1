@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug API Responses</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; white-space: pre-wrap; }
+        .error { background: #f8d7da; color: #721c24; }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Debug API Response Error</h1>
+    
+    <div class="test-section">
+        <h2>Test Package API</h2>
+        <button onclick="testPackageAPI()">Test Package API</button>
+        <div id="package-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>Test Booking API</h2>
+        <button onclick="testBookingAPI()">Test Booking API</button>
+        <div id="booking-result"></div>
+    </div>
+
+    <script>
+        async function testPackageAPI() {
+            const resultDiv = document.getElementById('package-result');
+            resultDiv.innerHTML = '<div class="info">Testing package API...</div>';
+            
+            try {
+                console.log('🔍 Testing package API...');
+                
+                const response = await fetch('src/api/packages/packageApi.php');
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                resultDiv.innerHTML = `<div class="info">
+HTTP Status: ${response.status}
+Content-Type: ${response.headers.get('content-type')}
+
+Raw Response:
+${responseText}</div>`;
+
+                // Try to parse as JSON
+                try {
+                    const data = JSON.parse(responseText);
+                    resultDiv.innerHTML += `<div class="success">
+✅ Valid JSON Response:
+${JSON.stringify(data, null, 2)}</div>`;
+                } catch (parseError) {
+                    resultDiv.innerHTML += `<div class="error">
+❌ JSON Parse Error: ${parseError.message}
+
+This is the source of your "Unexpected token '<'" error!</div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testBookingAPI() {
+            const resultDiv = document.getElementById('booking-result');
+            resultDiv.innerHTML = '<div class="info">Testing booking API...</div>';
+            
+            try {
+                console.log('🔍 Testing booking API...');
+                
+                const response = await fetch('src/api/bookings/bookingApi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: 'get_user_bookings' })
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
+                const responseText = await response.text();
+                console.log('Raw response:', responseText);
+                
+                resultDiv.innerHTML = `<div class="info">
+HTTP Status: ${response.status}
+Content-Type: ${response.headers.get('content-type')}
+
+Raw Response:
+${responseText}</div>`;
+
+                // Try to parse as JSON
+                try {
+                    const data = JSON.parse(responseText);
+                    resultDiv.innerHTML += `<div class="success">
+✅ Valid JSON Response:
+${JSON.stringify(data, null, 2)}</div>`;
+                } catch (parseError) {
+                    resultDiv.innerHTML += `<div class="error">
+❌ JSON Parse Error: ${parseError.message}
+
+This is the source of your "Unexpected token '<'" error!</div>`;
+                }
+                
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>

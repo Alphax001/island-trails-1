@@ -1,10 +1,13 @@
 <?php
-require_once 'src/utils/ApiResourceBase.php';
-require_once 'src/utils/JwtHandler.php';
-require_once 'src/classes/Model.php';
-require_once 'src/classes/Booking.php';
-require_once 'src/classes/Packages.php';
-require_once 'src/database/connection.php';
+// Suppress warnings for clean JSON output
+error_reporting(E_ERROR | E_PARSE);
+
+require_once __DIR__ . '/../../utils/ApiResourceBase.php';
+require_once __DIR__ . '/../../utils/JwtHandler.php';
+require_once __DIR__ . '/../../classes/Model.php';
+require_once __DIR__ . '/../../classes/Booking.php';
+require_once __DIR__ . '/../../classes/Packages.php';
+require_once __DIR__ . '/../../database/connection.php';
 
 class BookingApi extends ApiResourceBase {
     
@@ -417,6 +420,69 @@ class BookingApi extends ApiResourceBase {
         }
         
         return $datetime; // Return original if neither format matches
+    }
+}
+
+// Handle direct HTTP requests when file is accessed directly
+if (basename($_SERVER['PHP_SELF']) === 'bookingApi.php') {
+    header('Content-Type: application/json');
+    
+    try {
+        $bookingApi = new BookingApi();
+        
+        // Get request data
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'POST';
+        $data = [];
+        
+        if ($method === 'GET') {
+            $data = $_GET ?? [];
+        } else {
+            $input = file_get_contents('php://input');
+            $data = json_decode($input, true);
+            if ($data === null) {
+                $data = $_POST ?? [];
+            }
+        }
+        
+        // Determine action
+        $action = isset($data['action']) ? $data['action'] : '';
+        
+        switch ($action) {
+            case 'create':
+                $response = $bookingApi->create($data);
+                break;
+            case 'get_user_bookings':
+                $response = $bookingApi->readUserBookingsWithDetails($data);
+                break;
+            case 'read':
+                $response = $bookingApi->read($data);
+                break;
+            case 'readAll':
+                $response = $bookingApi->readAll($data);
+                break;
+            case 'update':
+                $response = $bookingApi->update($data);
+                break;
+            case 'updateStatus':
+                $response = $bookingApi->updateStatus($data);
+                break;
+            case 'delete':
+                $response = $bookingApi->delete($data);
+                break;
+            default:
+                $response = [
+                    'status' => 'error',
+                    'message' => 'Invalid action. Supported actions: create, get_user_bookings, read, readAll, update, updateStatus, delete'
+                ];
+        }
+        
+        echo json_encode($response);
+        
+    } catch (Exception $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Server error: ' . $e->getMessage()
+        ]);
     }
 }
 ?>

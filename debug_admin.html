@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Admin Navigation</title>
+</head>
+<body>
+    <h1>Debug Admin Navigation</h1>
+    <button onclick="testAdminLogin()">Test Admin Login & Navigation</button>
+    <div id="output"></div>
+
+    <script>
+        async function testAdminLogin() {
+            const output = document.getElementById('output');
+            output.innerHTML = '<p>Testing admin login...</p>';
+            
+            try {
+                // Login as admin
+                const response = await fetch('src/api/auth/userApi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        action: 'login',
+                        email: 'admin@islandtrails.com',
+                        password: 'admin123'
+                    })
+                });
+
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (data.status === 'success') {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('user', JSON.stringify(data.user));
+                    
+                    output.innerHTML += '<p>✅ Login successful!</p>';
+                    output.innerHTML += '<p>User: ' + JSON.stringify(data.user) + '</p>';
+                    
+                    // Now redirect to main page
+                    setTimeout(() => {
+                        window.location.href = 'index.php#admin-dashboard';
+                    }, 2000);
+                    
+                } else {
+                    output.innerHTML += '<p>❌ Login failed: ' + data.message + '</p>';
+                }
+            } catch (error) {
+                output.innerHTML += '<p>❌ Error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

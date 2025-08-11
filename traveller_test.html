@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traveller Experience Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 1000px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        .package-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .package-card { border: 1px solid #ddd; padding: 15px; border-radius: 8px; }
+        .booking-form { margin: 20px 0; }
+        .booking-form input, .booking-form select, .booking-form textarea { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>🏝️ Island Trails - Traveller Experience Test</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Package Loading</h2>
+        <button onclick="testPackages()">Load Packages</button>
+        <div id="packages-result"></div>
+        <div id="packages-display" class="package-grid"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test User Registration & Login</h2>
+        <button onclick="testRegistration()">Test Registration</button>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="auth-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Test Booking Creation</h2>
+        <div class="booking-form">
+            <select id="package-select">
+                <option value="">Select a package</option>
+            </select>
+            <input type="date" id="booking-date" value="">
+            <input type="number" id="num-people" placeholder="Number of people" value="2" min="1">
+            <textarea id="special-requests" placeholder="Special requests (optional)"></textarea>
+            <br>
+            <button onclick="testBooking()">Create Booking</button>
+        </div>
+        <div id="booking-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>4. Test User Bookings</h2>
+        <button onclick="testUserBookings()">Load My Bookings</button>
+        <div id="user-bookings-result"></div>
+    </div>
+
+    <script>
+        let testUser = null;
+        let testToken = null;
+        let availablePackages = [];
+
+        // Set default date to tomorrow
+        document.getElementById('booking-date').value = new Date(Date.now() + 86400000).toISOString().split('T')[0];
+
+        async function testPackages() {
+            const resultDiv = document.getElementById('packages-result');
+            const displayDiv = document.getElementById('packages-display');
+            resultDiv.innerHTML = '<div class="info">Loading packages...</div>';
+            
+            try {
+                const response = await fetch('src/api/packages/packageApi.php');
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    availablePackages = data.data;
+                    resultDiv.innerHTML = `<div class="success">✅ Loaded ${availablePackages.length} packages successfully!</div>`;
+                    
+                    // Display packages
+                    displayDiv.innerHTML = availablePackages.map(pkg => `
+                        <div class="package-card">
+                            <h3>${pkg.title}</h3>
+                            <p><strong>Location:</strong> ${pkg.location}</p>
+                            <p><strong>Price:</strong> $${pkg.price}</p>
+                            <p><strong>Duration:</strong> ${pkg.duration}</p>
+                            <p>${pkg.description}</p>
+                        </div>
+                    `).join('');
+                    
+                    // Populate package selector
+                    const select = document.getElementById('package-select');
+                    select.innerHTML = '<option value="">Select a package</option>' + 
+                        availablePackages.map(pkg => `<option value="${pkg.id}">${pkg.title} - $${pkg.price}</option>`).join('');
+                    
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Failed to load packages: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testRegistration() {
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.innerHTML = '<div class="info">Testing registration...</div>';
+            
+            const testData = {
+                action: 'register',
+                name: 'Test Traveller',
+                email: 'traveller_' + Date.now() + '@example.com',
+                password: 'TravellerPass123'
+            };
+            
+            try {
+                const response = await fetch('src/api/auth/userApi.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(testData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    resultDiv.innerHTML = `<div class="success">✅ Registration successful! Email: ${testData.email}</div>`;
+                    // Save for login test
+                    window.testUserEmail = testData.email;
+                    window.testUserPassword = testData.password;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Registration failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testLogin() {
+            if (!window.testUserEmail) {
+                document.getElementById('auth-result').innerHTML = '<div class="error">❌ Please register first</div>';
+                return;
+            }
+            
+            const resultDiv = document.getElementById('auth-result');
+            resultDiv.innerHTML = '<div class="info">Testing login...</div>';
+            
+            const loginData = {
+                action: 'login',
+                email: window.testUserEmail,
+                password: window.testUserPassword
+            };
+            
+            try {
+                const response = await fetch('src/api/auth/userApi.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(loginData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    testUser = data.user;
+                    testToken = data.token;
+                    resultDiv.innerHTML = `<div class="success">✅ Login successful! Welcome ${testUser.name} (Role: ${testUser.role})</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Login failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testBooking() {
+            if (!testToken) {
+                document.getElementById('booking-result').innerHTML = '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            const packageId = document.getElementById('package-select').value;
+            const bookingDate = document.getElementById('booking-date').value;
+            const numPeople = document.getElementById('num-people').value;
+            const specialRequests = document.getElementById('special-requests').value;
+            
+            if (!packageId || !bookingDate) {
+                document.getElementById('booking-result').innerHTML = '<div class="error">❌ Please select package and date</div>';
+                return;
+            }
+            
+            const resultDiv = document.getElementById('booking-result');
+            resultDiv.innerHTML = '<div class="info">Creating booking...</div>';
+            
+            const bookingData = {
+                action: 'create',
+                package_id: packageId,
+                booking_date: bookingDate + ' 09:00:00',
+                number_of_people: parseInt(numPeople),
+                special_requests: specialRequests
+            };
+            
+            try {
+                const response = await fetch('src/api/bookings/bookingApi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${testToken}`
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const selectedPackage = availablePackages.find(p => p.id == packageId);
+                    resultDiv.innerHTML = `<div class="success">✅ Booking created successfully!<br>
+                        Package: ${selectedPackage?.title}<br>
+                        Date: ${bookingDate}<br>
+                        People: ${numPeople}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Booking failed: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testUserBookings() {
+            if (!testToken) {
+                document.getElementById('user-bookings-result').innerHTML = '<div class="error">❌ Please login first</div>';
+                return;
+            }
+            
+            const resultDiv = document.getElementById('user-bookings-result');
+            resultDiv.innerHTML = '<div class="info">Loading user bookings...</div>';
+            
+            try {
+                const response = await fetch('src/api/bookings/bookingApi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${testToken}`
+                    },
+                    body: JSON.stringify({ action: 'get_user_bookings' })
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    const bookings = data.bookings || data.data || [];
+                    if (bookings.length === 0) {
+                        resultDiv.innerHTML = '<div class="info">📅 No bookings found. Create a booking first!</div>';
+                    } else {
+                        resultDiv.innerHTML = `<div class="success">✅ Found ${bookings.length} booking(s):</div>` +
+                            bookings.map(booking => `
+                                <div style="border: 1px solid #ccc; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                                    <strong>Package:</strong> ${booking.package_name || booking.title || 'Unknown'}<br>
+                                    <strong>Date:</strong> ${booking.booking_date}<br>
+                                    <strong>People:</strong> ${booking.number_of_people}<br>
+                                    <strong>Status:</strong> ${booking.status}<br>
+                                    ${booking.special_requests ? `<strong>Requests:</strong> ${booking.special_requests}<br>` : ''}
+                                </div>
+                            `).join('');
+                    }
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Failed to load bookings: ${data.message}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        // Auto-load packages on page load
+        window.onload = () => testPackages();
+    </script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ccc; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; cursor: pointer; }
+        input { padding: 8px; margin: 5px; width: 200px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Authentication System Test</h1>
+
+    <div class="test-section">
+        <h2>1. Test Registration</h2>
+        <div>
+            <input type="text" id="reg-username" placeholder="Username" value="testuser">
+            <input type="email" id="reg-email" placeholder="Email" value="test@example.com">
+            <input type="password" id="reg-password" placeholder="Password" value="TestPassword123">
+            <input type="text" id="reg-firstname" placeholder="First Name" value="Test">
+            <input type="text" id="reg-lastname" placeholder="Last Name" value="User">
+        </div>
+        <button onclick="testRegistration()">Test Registration</button>
+        <div id="reg-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Test Login</h2>
+        <div>
+            <input type="text" id="login-username" placeholder="Username or Email" value="testuser">
+            <input type="password" id="login-password" placeholder="Password" value="TestPassword123">
+        </div>
+        <button onclick="testLogin()">Test Login</button>
+        <div id="login-result" class="result" style="display: none;"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Cleanup</h2>
+        <button onclick="cleanupTest()">Delete Test User</button>
+        <div id="cleanup-result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        let testUserId = null;
+        let authToken = null;
+
+        async function testRegistration() {
+            const resultDiv = document.getElementById('reg-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = 'Testing registration...';
+
+            const data = {
+                action: 'register',
+                username: document.getElementById('reg-username').value + '_' + Date.now(),
+                email: 'test_' + Date.now() + '@example.com',
+                password: document.getElementById('reg-password').value,
+                first_name: document.getElementById('reg-firstname').value,
+                last_name: document.getElementById('reg-lastname').value
+            };
+
+            try {
+                const response = await fetch('src/api/auth/userApi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Registration successful!<br>Message: ${result.message}`;
+                    
+                    // Update login fields with registered data
+                    document.getElementById('login-username').value = data.username;
+                    document.getElementById('login-password').value = data.password;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Registration failed: ${result.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function testLogin() {
+            const resultDiv = document.getElementById('login-result');
+            resultDiv.style.display = 'block';
+            resultDiv.innerHTML = 'Testing login...';
+
+            const data = {
+                action: 'login',
+                username: document.getElementById('login-username').value,
+                password: document.getElementById('login-password').value
+            };
+
+            try {
+                const response = await fetch('src/api/auth/userApi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = `✅ Login successful!<br>
+                                         User: ${result.user.first_name} ${result.user.last_name}<br>
+                                         Email: ${result.user.email}<br>
+                                         Role: ${result.user.role}<br>
+                                         Token: ${result.token ? 'Generated' : 'Not generated'}`;
+                    
+                    testUserId = result.user.id;
+                    authToken = result.token;
+                } else {
+                    resultDiv.className = 'result error';
+                    resultDiv.innerHTML = `❌ Login failed: ${result.message}`;
+                }
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function cleanupTest() {
+            const resultDiv = document.getElementById('cleanup-result');
+            resultDiv.style.display = 'block';
+            
+            if (!testUserId) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '❌ No test user to cleanup. Please run login test first.';
+                return;
+            }
+
+            resultDiv.innerHTML = 'Cleaning up test user...';
+
+            try {
+                // Call cleanup script
+                const response = await fetch('cleanup_test.php');
+                const result = await response.text();
+                
+                resultDiv.className = 'result success';
+                resultDiv.innerHTML = `✅ Cleanup completed:<br><pre>${result}</pre>`;
+                
+                testUserId = null;
+                authToken = null;
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = `❌ Cleanup error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>

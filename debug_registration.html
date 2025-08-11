@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; max-width: 800px; margin: 0 auto; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .form-group { margin: 10px 0; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input { padding: 10px; width: 100%; max-width: 300px; border: 1px solid #ddd; border-radius: 4px; }
+        button { padding: 12px 24px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; margin: 10px 5px; }
+        button:hover { background: #0056b3; }
+        .result { margin: 15px 0; padding: 15px; border-radius: 5px; white-space: pre-wrap; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .debug { background: #f8f9fa; border: 1px solid #dee2e6; font-family: monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Registration Debug Test</h1>
+    <p>This test will help identify exactly why registration is failing.</p>
+
+    <div class="test-section">
+        <h2>1. Test Registration Form</h2>
+        <form id="test-registration-form">
+            <div class="form-group">
+                <label for="name">Full Name:</label>
+                <input type="text" id="name" name="name" value="John Doe" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" value="TestPassword123" required>
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password:</label>
+                <input type="password" id="confirm_password" name="confirm_password" value="TestPassword123" required>
+            </div>
+            <button type="submit">Test Registration</button>
+        </form>
+        <div id="registration-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>2. Raw API Test</h2>
+        <button onclick="testRawAPI()">Test Raw API Call</button>
+        <div id="raw-api-result"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>3. Network Debugging</h2>
+        <button onclick="testNetworkPaths()">Test API Endpoint Paths</button>
+        <div id="network-result"></div>
+    </div>
+
+    <script>
+        // Generate unique email
+        document.getElementById('email').value = 'test_' + Date.now() + '@example.com';
+
+        // Test 1: Form submission (simulating real user interaction)
+        document.getElementById('test-registration-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const resultDiv = document.getElementById('registration-result');
+            resultDiv.innerHTML = '<div class="info">Testing registration form submission...</div>';
+            
+            try {
+                const formData = new FormData(e.target);
+                const registerData = {
+                    name: formData.get('name'),
+                    email: formData.get('email'),
+                    password: formData.get('password')
+                };
+
+                // Validate password confirmation
+                const confirmPassword = formData.get('confirm_password');
+                if (registerData.password !== confirmPassword) {
+                    throw new Error('Passwords do not match');
+                }
+
+                console.log('🔍 Registration attempt with data:', registerData);
+
+                const response = await fetch('src/api/auth/userApi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ action: 'register', ...registerData })
+                });
+
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response headers:', [...response.headers.entries()]);
+
+                const responseText = await response.text();
+                console.log('📡 Raw response:', responseText);
+
+                let data;
+                try {
+                    data = JSON.parse(responseText);
+                } catch (parseError) {
+                    throw new Error(`JSON Parse Error: ${parseError.message}\nRaw response: ${responseText}`);
+                }
+
+                if (data.status === 'success') {
+                    resultDiv.innerHTML = `<div class="success">✅ Registration successful!
+Message: ${data.message}
+Email: ${registerData.email}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">❌ Registration failed!
+Status: ${data.status}
+Message: ${data.message}</div>`;
+                }
+
+                resultDiv.innerHTML += `<div class="debug">Debug Info:
+Request URL: src/api/auth/userApi.php
+Request Method: POST
+Request Headers: Content-Type: application/json
+Request Body: ${JSON.stringify({ action: 'register', ...registerData }, null, 2)}
+
+Response Status: ${response.status}
+Response Body: ${responseText}</div>`;
+
+            } catch (error) {
+                console.error('❌ Registration error:', error);
+                resultDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        });
+
+        // Test 2: Raw API call
+        async function testRawAPI() {
+            const resultDiv = document.getElementById('raw-api-result');
+            resultDiv.innerHTML = '<div class="info">Testing raw API call...</div>';
+
+            const testData = {
+                action: 'register',
+                name: 'Raw API Test',
+                email: 'raw_test_' + Date.now() + '@example.com',
+                password: 'TestPassword123'
+            };
+
+            try {
+                const response = await fetch('src/api/auth/userApi.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testData)
+                });
+
+                const responseText = await response.text();
+                let data;
+                
+                try {
+                    data = JSON.parse(responseText);
+                    resultDiv.innerHTML = `<div class="success">✅ Raw API call successful!
+Response: ${JSON.stringify(data, null, 2)}</div>`;
+                } catch (parseError) {
+                    resultDiv.innerHTML = `<div class="error">❌ JSON Parse Error!
+Error: ${parseError.message}
+Raw Response: ${responseText}</div>`;
+                }
+
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">❌ Network Error: ${error.message}</div>`;
+            }
+        }
+
+        // Test 3: Network path testing
+        async function testNetworkPaths() {
+            const resultDiv = document.getElementById('network-result');
+            resultDiv.innerHTML = '<div class="info">Testing API endpoint paths...</div>';
+
+            const paths = [
+                'src/api/auth/userApi.php',
+                './src/api/auth/userApi.php',
+                '/WAD/island-trails/src/api/auth/userApi.php',
+                'http://localhost/WAD/island-trails/src/api/auth/userApi.php'
+            ];
+
+            let results = '';
+
+            for (const path of paths) {
+                try {
+                    const response = await fetch(path, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'register', name: 'Path Test', email: 'pathtest@example.com', password: 'test123' })
+                    });
+
+                    results += `✅ ${path}: ${response.status} ${response.statusText}\n`;
+                } catch (error) {
+                    results += `❌ ${path}: ${error.message}\n`;
+                }
+            }
+
+            resultDiv.innerHTML = `<div class="debug">Path Test Results:
+${results}</div>`;
+        }
+    </script>
+</body>
+</html>

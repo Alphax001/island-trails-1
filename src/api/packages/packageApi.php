@@ -1,8 +1,11 @@
 <?php
-require_once 'src/utils/ApiResourceBase.php';
-require_once 'src/classes/Model.php';
-require_once 'src/classes/Packages.php';
-require_once 'src/database/connection.php';
+// Suppress warnings for clean JSON output
+error_reporting(E_ERROR | E_PARSE);
+
+require_once __DIR__ . '/../../utils/ApiResourceBase.php';
+require_once __DIR__ . '/../../classes/Model.php';
+require_once __DIR__ . '/../../classes/Packages.php';
+require_once __DIR__ . '/../../database/connection.php';
 
 class PackageApi extends ApiResourceBase {
     public function __construct() {
@@ -168,3 +171,60 @@ class PackageApi extends ApiResourceBase {
 
     // Additional methods for update, delete, and read can be implemented similarly
 }
+
+// Handle direct HTTP requests when file is accessed directly
+if (basename($_SERVER['PHP_SELF']) === 'packageApi.php') {
+    header('Content-Type: application/json');
+    
+    try {
+        $packageApi = new PackageApi();
+        
+        // Get request data
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        $data = [];
+        
+        if ($method === 'GET') {
+            $data = $_GET ?? [];
+        } else {
+            $input = file_get_contents('php://input');
+            $data = json_decode($input, true);
+            if ($data === null) {
+                $data = $_POST ?? [];
+            }
+        }
+        
+        // Determine action
+        $action = isset($data['action']) ? $data['action'] : 'readAll'; // Default to readAll for packages
+        
+        switch ($action) {
+            case 'create':
+                $response = $packageApi->create($data);
+                break;
+            case 'readAll':
+            case 'getAll':
+                $response = $packageApi->readAll($data);
+                break;
+            case 'read':
+                $response = $packageApi->read($data);
+                break;
+            case 'update':
+                $response = $packageApi->update($data);
+                break;
+            case 'delete':
+                $response = $packageApi->delete($data);
+                break;
+            default:
+                // Default to readAll for packages (for frontend compatibility)
+                $response = $packageApi->readAll($data);
+        }
+        
+        echo json_encode($response);
+        
+    } catch (Exception $e) {
+        echo json_encode([
+            'status' => 'error',
+            'message' => 'Server error: ' . $e->getMessage()
+        ]);
+    }
+}
+?>
